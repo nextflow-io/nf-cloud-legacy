@@ -1,0 +1,44 @@
+name: Nextflow CI
+# This workflow is triggered on pushes to the repository.
+on: [push]
+
+jobs:
+  build:
+    name: Build nf-cloud-legacy
+    # This job runs on Linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+
+    steps:
+    - name: Environment
+      run: env | sort 
+
+    - name: Checkout
+      uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+        submodules: true
+
+    - name: Setup Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: '8.0.222' 
+        architecture: x64
+
+    - name: Compile
+      run: make assemble
+
+    - name: Tests
+      run: make test
+      env:
+        GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+
+    - name: Publish
+      if: failure()
+      run: bash pub-tests.sh github
+      env:
+        TEST_JDK: ${{ matrix.java_version }}
+        NXF_AWS_ACCESS: ${{ secrets.NXF_AWS_ACCESS }}
+        NXF_AWS_SECRET: ${{ secrets.NXF_AWS_SECRET }}
