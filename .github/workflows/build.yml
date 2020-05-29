@@ -28,10 +28,10 @@ jobs:
         architecture: x64
 
     - name: Compile
-      run: make assemble
+      run: ./gradlew compileGroovy
 
     - name: Tests
-      run: make test
+      run: ./gradlew check
       env:
         GRADLE_OPTS: '-Dorg.gradle.daemon=false'
 
