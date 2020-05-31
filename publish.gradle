@@ -9,8 +9,20 @@ apply plugin: 'signing'
 // include main build
 apply from: 'build.gradle'
 
+// patched as described here
+// http://forums.gradle.org/gradle/topics/gradle_task_groovydoc_failing_with_noclassdeffounderror
+tasks.withType(Groovydoc) {
+    groovyClasspath = project.configurations.groovyDoc
+    includes  = ["nextflow/**"]
+}
+
 // to sign archive is needed the signing key in the `gradle.properties` file
 ext.enableSignArchives = project.findProperty('signing.keyId')
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from configurations.groovyDoc
+}
 
 task sourcesJar(type: Jar) {
     classifier = 'sources'
@@ -18,7 +30,7 @@ task sourcesJar(type: Jar) {
 }
 
 artifacts {
-    archives sourcesJar
+    archives javadocJar, sourcesJar
 }
 
 signing {
